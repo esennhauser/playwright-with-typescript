@@ -34,20 +34,21 @@ jobs:
               -e PASSWORD="${{ secrets.PASSWORD }}" \
               -e URL="${{ secrets.URL }}" \
               qa-automation \
-              --tags=smoke tests/features
+              npm test -- --tags "@smoke"
           else
             docker run --name qa-tests \
               -e EMAIL="${{ secrets.EMAIL }}" \
               -e PASSWORD="${{ secrets.PASSWORD }}" \
               -e URL="${{ secrets.URL }}" \
               qa-automation \
-              tests/features
+              npm test
           fi
 
       - name: Copy Allure results
         if: always()
         run: |
-          docker cp qa-tests:/app/allure-results ./allure-results
+          mkdir -p allure-results
+          docker cp qa-tests:/app/allure-results/. ./allure-results/ || true
 
       - name: Upload Allure results
         if: always()
@@ -64,9 +65,13 @@ jobs:
       - name: Generate Allure report
         if: always()
         run: |
-          allure generate allure-results \
-            --clean \
-            -o allure-report
+          if [ -d "allure-results" ] && [ "$(find allure-results -type f | wc -l)" -gt 0 ]; then
+            allure generate allure-results \
+              --clean \
+              -o allure-report
+          else
+            echo "No Allure results found"
+          fi
 
       - name: Upload Pages artifact
         if: always()

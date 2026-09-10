@@ -1,4 +1,9 @@
-import { IWorldOptions, World, setWorldConstructor } from '@cucumber/cucumber';
+import {
+  IWorldOptions,
+  World,
+  setWorldConstructor,
+} from '@cucumber/cucumber';
+
 import {
   APIRequestContext,
   APIResponse,
@@ -14,6 +19,7 @@ export class CustomWorld extends World {
   // API
   request!: APIRequestContext;
   response!: APIResponse;
+  responseBody!: string;
 
   // Environment
   email!: string;

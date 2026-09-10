@@ -12,5 +12,5 @@
     "driver/**/*.ts",
     "pages/**/*.ts",
     "tests/**/*.ts"
-  ]
+, "playwright.config.ts"  ]
 }

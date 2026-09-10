@@ -6,10 +6,7 @@ import { ProductPage } from '../../../pages/products_page';
 Given('A customer is logged on the Saucedemo platform', async function () {
   const loginPage = new LoginPage(this.page);
 
-  await loginPage.fillCredentials(
-    'standard_user',
-    'secret_sauce'
-  );
+  await loginPage.fillCredentials(this.email,this.password);
 
   await loginPage.clickSignIn();
 

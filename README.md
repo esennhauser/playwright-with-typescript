@@ -123,8 +123,8 @@ Environment variables can be passed at runtime:
 
 ```bash
 docker run --rm \
-  -e MEDAPPOINT_EMAIL=your_email \
-  -e MEDAPPOINT_PASSWORD=your_password \
+  -e EMAIL=your_email \
+  -e PASSWORD=your_password \
   playwright-typescript
 ```
 

@@ -4,7 +4,8 @@ export async function startBrowser(): Promise<{
   browser: Browser;
   page: Page;
 }> {
-  const headless = process.env.HEADLESS?.toLowerCase() === 'true';
+
+  const headless = process.env.HEADLESS?.toLowerCase() !== 'false';
 
   const browser = await chromium.launch({
     headless,

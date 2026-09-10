@@ -1,48 +1,83 @@
-import { Before, After, AfterStep } from '@cucumber/cucumber';
+import {
+  Before,
+  After,
+  AfterStep,
+  setDefaultTimeout,
+} from '@cucumber/cucumber';
+
+import { request } from '@playwright/test';
 import dotenv from 'dotenv';
 
 import { startBrowser } from '../../driver/driver';
+import { CustomWorld } from './world';
 
 dotenv.config();
 
-Before(async function () {
-  this.email = process.env.USER_EMAIL;
-  this.password = process.env.USER_PASSWORD;
-  this.baseUrl = process.env.URL;
+setDefaultTimeout(5000);
 
-  if (!this.email || !this.password) {
+// =========================
+// UI hooks
+// =========================
+
+Before({ tags: 'not @api' }, async function (this: CustomWorld) {
+  const email = process.env.EMAIL;
+  const password = process.env.PASSWORD;
+  const baseUrl = process.env.URL;
+
+  if (!email || !password || !baseUrl) {
     throw new Error(
-      'USER_EMAIL and USER_PASSWORD must be configured in .env file'
+      'EMAIL, PASSWORD and URL must be configured in .env file'
     );
   }
+
+  this.email = email;
+  this.password = password;
+  this.baseUrl = baseUrl;
 
   const { browser, page } = await startBrowser();
 
   this.browser = browser;
   this.page = page;
 
-  await this.page.goto(`${this.baseUrl}/`);
+  await this.page.goto(this.baseUrl);
 });
 
-AfterStep(async function ({ result }) {
-  if (!this.page) {
-    return;
+AfterStep(
+  { tags: 'not @api' },
+  async function (this: CustomWorld, { result }) {
+    if (!this.page) {
+      return;
+    }
+
+    const screenshot = await this.page.screenshot();
+
+    await this.attach(screenshot, 'image/png');
+
+    if (result?.status === 'FAILED') {
+      await this.attach(
+        `URL: ${this.page.url()}`,
+        'text/plain'
+      );
+    }
   }
+);
 
-  const screenshot = await this.page.screenshot();
-
-  await this.attach(screenshot, 'image/png');
-
-  if (result?.status === 'FAILED') {
-    await this.attach(
-      `URL: ${this.page.url()}`,
-      'text/plain'
-    );
-  }
-});
-
-After(async function () {
+After({ tags: 'not @api' }, async function (this: CustomWorld) {
   if (this.browser) {
     await this.browser.close();
+  }
+});
+
+// =========================
+// API hooks
+// =========================
+
+Before({ tags: '@api' }, async function (this: CustomWorld) {
+  this.request = await request.newContext();
+});
+
+After({ tags: '@api' }, async function (this: CustomWorld) {
+  if (this.request) {
+    await this.request.dispose();
   }
 });
